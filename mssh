@@ -1,0 +1,61 @@
+#!/bin/bash
+
+_installDeps(){
+  echo "Instalando Dependencias !"
+
+	sudo apt install -y \
+		dialog\
+		ssh
+
+  dialog --title 'Instalação de Pacotes'\
+    --infobox '\n Instalação Finalizada !' 0 0 
+}
+
+_installMssh(){
+  mkdir $HOME/.local/share/MultiSSHConnect
+}
+
+_listConnection(){
+  file=$(dialog --stdout --title "Conexões Criadas" --fselect $HOME/.local/share/MultiSSHConnect/* 10 25)
+  echo "${file}"
+}
+
+_directConnection(){
+  echo "Conecta Diretamente Via Ip"
+}
+
+_addConnection(){
+  echo "Adiciona conexão"
+}
+
+_SelectedAction(){
+  case $1 in
+    H-Quit) dialog --infobox 'Bay Bay !' 4 0;;
+    J-ListConection) _listConnection ;;
+    K-DirectConnection) _directConnection;;
+    L-AddConection) _addConnection ;;
+    *)      dialog --infobox 'Opção Invalida !' 4 0 && _initMultiSSHConnect;;
+  esac
+}
+
+_initMultiSSHConnect(){
+  selectedoption=$( dialog                           \
+    --stdout --title 'MULTI SSH CONNECT'             \
+    --menu 'Opções:' 0 0 0                           \
+    J-ListConection     'Lista Todas Conexões'       \
+    K-DirectConnection  'Conecta Diretamente Via Ip' \
+    L-AddConection      'Adiciona Novas Conexões'    \
+    H-Quit 'Sair Do MultiConnection' 2>&1            \
+    ) 
+   _SelectedAction $selectedoption
+}
+
+_start(){
+  _installDeps
+  if [ ! -d $HOME"/.local/share/MultiSSHConnect" ]; then
+    _installMssh
+  fi
+  _initMultiSSHConnect
+}
+
+_start
