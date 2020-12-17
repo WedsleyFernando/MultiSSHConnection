@@ -16,8 +16,8 @@ _installMssh(){
 }
 
 _listConnection(){
-  file=$(dialog --stdout --title "Conexões Criadas" --fselect $HOME/.local/share/MultiSSHConnect/* 10 25)
-  echo "${file}"
+  file = cat $HOME/.local/share/MultiSSHConnect/connections 
+  echo file
 }
 
 _directConnection(){
