@@ -5,7 +5,9 @@ _installDeps(){
 
 	sudo apt install -y \
 		dialog\
-		ssh
+		ssh\
+        libxml2-utils\
+        sshpass
 
   dialog --title 'Instalação de Pacotes'\
     --infobox '\n Instalação Finalizada !' 0 0 
@@ -13,15 +15,47 @@ _installDeps(){
 
 _installMssh(){
   mkdir $HOME/.local/share/MultiSSHConnect
+  touch $HOME/.local/share/MultiSSHConnect/connections
+  echo "Teste" >> $HOME/.local/share/MultiSSHConnect/connections
 }
 
 _listConnection(){
-  file = cat $HOME/.local/share/MultiSSHConnect/connections 
-  echo file
+  file=$(cat $HOME/.local/share/MultiSSHConnect/connections)
+  _readXML
+  echo $Teste 
+}
+
+_readXML(){
+    connections=($(grep -oP '(?<=connection>)[^<]+' "/my_path/spam.xml"))
+
+    for i in ${!connection[*]}
+    do
+        echo "$i" "${connection[$i]}"
+        # instead of echo use the values to send emails, etc
+    done
 }
 
 _directConnection(){
-  echo "Conecta Diretamente Via Ip"
+    exec 3>&1
+
+    Credentials=$(dialog --ok-label "Conectar"\
+          --cancel-label "Cancelar"\
+          --backtitle "Connexao" \
+          --title "Conexao Direta" \
+          --form "Use as Setas" \
+        15 50 0 \
+        "IP Machine:"      1 1	"$Ip" 	    1 15 15 0 \
+        "Username:"        2 1	"$userMage" 2 15 15 0 \
+        "Pass:"            3 1	"$PassMage"	3 15 15 0 \
+        "Username DB:"     4 1	"$UserDB" 	4 15 15 0 \
+        "Pass DB:"         5 1	"$PassDB"  	5 15 15 0 \
+    2>&1 1>&3)
+    echo "$Credentials"
+    _connect $Credentials
+}
+
+_connect(){
+    sshpass -p "$3" ssh "$2"@"$1" 
 }
 
 _addConnection(){
