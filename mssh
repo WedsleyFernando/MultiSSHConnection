@@ -1,5 +1,16 @@
 #!/bin/bash
 
+_InitScren(){
+cat <<EOF
+ __  __       _ _    ____                            _   _                 
+|  \/  |_   _| | |_ / ___|___  _ __  _ __   ___  ___| |_(_) ___  _ __  ___ 
+| |\/| | | | | | __| |   / _ \| '_ \| '_ \ / _ \/ __| __| |/ _ \| '_ \/ __|
+| |  | | |_| | | |_| |__| (_) | | | | | | |  __/ (__| |_| | (_) | | | \__ \. 
+|_|  |_|\__,_|_|\__|\____\___/|_| |_|_| |_|\___|\___|\__|_|\___/|_| |_|___/
+
+EOF
+}
+
 _installDeps(){
   echo "Instalando Dependencias !"
 
@@ -8,31 +19,43 @@ _installDeps(){
 		ssh\
         libxml2-utils\
         sshpass
-
-  dialog --title 'Instalação de Pacotes'\
-    --infobox '\n Instalação Finalizada !' 0 0 
 }
 
 _installMssh(){
   mkdir $HOME/.local/share/MultiSSHConnect
   touch $HOME/.local/share/MultiSSHConnect/connections
-  echo "Teste" >> $HOME/.local/share/MultiSSHConnect/connections
 }
 
 _listConnection(){
-  file=$(cat $HOME/.local/share/MultiSSHConnect/connections)
-  _readXML
-  echo $Teste 
+  _readConnections
 }
 
-_readXML(){
-    connections=($(grep -oP '(?<=connection>)[^<]+' "/my_path/spam.xml"))
+_getConnection(){
+    lineFile=$(echo $1p)
+    Credentials=$( sed -n $lineFile $HOME/.local/share/MultiSSHConnect/connections )
+    Ip=$(echo $Credentials| awk -F ";" '{print $2}')
+    User=$(echo $Credentials| awk -F ";" '{print $3}')
+    Pass=$(echo $Credentials| awk -F ";" '{print $4}')
+    Port=$(echo $Credentials| awk -F ";" '{print $5}')
 
-    for i in ${!connection[*]}
+    _connect $Ip $User $Pass $Port
+}
+
+_readConnections(){
+    input="$HOME/.local/share/MultiSSHConnect/connections"
+    cont=1
+    while IFS= read -r line
     do
-        echo "$i" "${connection[$i]}"
-        # instead of echo use the values to send emails, etc
-    done
+        machines=$(echo $machines $( echo $cont $(echo $( echo $line | awk -F ";" '{ print $1 }'))))
+        cont=$(( cont+1 ))
+    done < "$input"
+
+    selectedmachine=$( dialog                           \
+      --stdout --title 'Select Connection'             \
+      --menu 'Machines:' 0 0 0    $machines                       \
+      2>&1            \
+    ) 
+    _getConnection $selectedmachine
 }
 
 _directConnection(){
@@ -47,19 +70,35 @@ _directConnection(){
         "IP Machine:"      1 1	"$Ip" 	    1 15 15 0 \
         "Username:"        2 1	"$userMage" 2 15 15 0 \
         "Pass:"            3 1	"$PassMage"	3 15 15 0 \
-        "Username DB:"     4 1	"$UserDB" 	4 15 15 0 \
-        "Pass DB:"         5 1	"$PassDB"  	5 15 15 0 \
+        "Port :"           4 1	"$Port"  	4 15 15 0 \
     2>&1 1>&3)
-    echo "$Credentials"
     _connect $Credentials
 }
 
 _connect(){
-    sshpass -p "$3" ssh "$2"@"$1" 
+    $( echo sshpass -p "$3" ssh -p "$4" "$2"@"$1" )
+}
+
+_userAddConnection(){
+    exec 3>&1
+
+    Credentials=$(dialog --ok-label "Adicionar"\
+          --cancel-label "Cancelar"\
+          --backtitle "Connexao" \
+          --title "Conexao Direta" \
+          --form "Não use espaços e nem ';'" \
+        15 50 0 \
+        "Connection Name:" 1 1	"$Name" 	    1 25 25 0 \
+        "IP Machine:"      2 1	"$Ip" 	    2 25 25 0 \
+        "Username:"        3 1	"$userMage" 3 25 25 0 \
+        "Pass:"            4 1	"$PassMage"	4 25 25 0 \
+        "Port :"           5 1	"$Port"  	5 25 25 0 \
+    2>&1 1>&3)
+    _addConnection $Credentials
 }
 
 _addConnection(){
-  echo "Adiciona conexão"
+    echo "$1;$2;$3;$4;$5" >> $HOME/.local/share/MultiSSHConnect/connections
 }
 
 _SelectedAction(){
@@ -67,7 +106,7 @@ _SelectedAction(){
     H-Quit) dialog --infobox 'Bay Bay !' 4 0;;
     J-ListConection) _listConnection ;;
     K-DirectConnection) _directConnection;;
-    L-AddConection) _addConnection ;;
+    L-AddConection) _userAddConnection ;;
     *)      dialog --infobox 'Opção Invalida !' 4 0 && _initMultiSSHConnect;;
   esac
 }
@@ -85,6 +124,7 @@ _initMultiSSHConnect(){
 }
 
 _start(){
+  _InitScren
   _installDeps
   if [ ! -d $HOME"/.local/share/MultiSSHConnect" ]; then
     _installMssh
