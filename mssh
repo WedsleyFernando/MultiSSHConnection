@@ -2,32 +2,31 @@
 
 _InitScren(){
 cat <<EOF
- __  __       _ _    ____                            _   _                 
-|  \/  |_   _| | |_ / ___|___  _ __  _ __   ___  ___| |_(_) ___  _ __  ___ 
-| |\/| | | | | | __| |   / _ \| '_ \| '_ \ / _ \/ __| __| |/ _ \| '_ \/ __|
-| |  | | |_| | | |_| |__| (_) | | | | | | |  __/ (__| |_| | (_) | | | \__ \. 
-|_|  |_|\__,_|_|\__|\____\___/|_| |_|_| |_|\___|\___|\__|_|\___/|_| |_|___/
+     __  __       _ _    ____                            _   _                 
+    |  \/  |_   _| | |_ / ___|___  _ __  _ __   ___  ___| |_(_) ___  _ __  ___ 
+    | |\/| | | | | | __| |   / _ \| '_ \| '_ \ / _ \/ __| __| |/ _ \| '_ \/ __|
+    | |  | | |_| | | |_| |__| (_) | | | | | | |  __/ (__| |_| | (_) | | | \__ \. 
+    |_|  |_|\__,_|_|\__|\____\___/|_| |_|_| |_|\___|\___|\__|_|\___/|_| |_|___/
 
 EOF
 }
 
 _installDeps(){
-  echo "Instalando Dependencias !"
+    echo "Instalando Dependencias !"
 
 	sudo apt install -y \
 		dialog\
 		ssh\
-        libxml2-utils\
         sshpass
 }
 
 _installMssh(){
-  mkdir $HOME/.local/share/MultiSSHConnect
-  touch $HOME/.local/share/MultiSSHConnect/connections
+    mkdir $HOME/.local/share/MultiSSHConnect
+    touch $HOME/.local/share/MultiSSHConnect/connections
 }
 
 _listConnection(){
-  _readConnections
+    _readConnections
 }
 
 _getConnection(){
@@ -51,9 +50,9 @@ _readConnections(){
     done < "$input"
 
     selectedmachine=$( dialog                           \
-      --stdout --title 'Select Connection'             \
-      --menu 'Machines:' 0 0 0    $machines                       \
-      2>&1            \
+        --stdout --title 'Select Connection'             \
+        --menu 'Machines:' 0 0 0    $machines                       \
+        2>&1            \
     ) 
     _getConnection $selectedmachine
 }
@@ -83,10 +82,10 @@ _userAddConnection(){
     exec 3>&1
 
     Credentials=$(dialog --ok-label "Adicionar"\
-          --cancel-label "Cancelar"\
-          --backtitle "Connexao" \
-          --title "Conexao Direta" \
-          --form "Não use espaços e nem ';'" \
+        --cancel-label "Cancelar"\
+        --backtitle "Connexao" \
+        --title "Conexao Direta" \
+        --form "Não use espaços e nem ';'" \
         15 50 0 \
         "Connection Name:" 1 1	"$Name" 	    1 25 25 0 \
         "IP Machine:"      2 1	"$Ip" 	    2 25 25 0 \
@@ -102,34 +101,34 @@ _addConnection(){
 }
 
 _SelectedAction(){
-  case $1 in
-    H-Quit) dialog --infobox 'Bay Bay !' 4 0;;
-    J-ListConection) _listConnection ;;
-    K-DirectConnection) _directConnection;;
-    L-AddConection) _userAddConnection ;;
-    *)      dialog --infobox 'Opção Invalida !' 4 0 && _initMultiSSHConnect;;
-  esac
+    case $1 in
+        H-Quit) dialog --infobox 'Bay Bay !' 4 0;;
+        J-ListConection) _listConnection ;;
+        K-DirectConnection) _directConnection;;
+        L-AddConection) _userAddConnection ;;
+        *)      dialog --infobox 'Opção Invalida !' 4 0 && _initMultiSSHConnect;;
+    esac
 }
 
 _initMultiSSHConnect(){
-  selectedoption=$( dialog                           \
-    --stdout --title 'MULTI SSH CONNECT'             \
-    --menu 'Opções:' 0 0 0                           \
-    J-ListConection     'Lista Todas Conexões'       \
-    K-DirectConnection  'Conecta Diretamente Via Ip' \
-    L-AddConection      'Adiciona Novas Conexões'    \
-    H-Quit 'Sair Do MultiConnection' 2>&1            \
+    selectedoption=$( dialog                           \
+        --stdout --title 'MULTI SSH CONNECT'             \
+        --menu 'Opções:' 0 0 0                           \
+        J-ListConection     'Lista Todas Conexões'       \
+        K-DirectConnection  'Conecta Diretamente Via Ip' \
+        L-AddConection      'Adiciona Novas Conexões'    \
+        H-Quit 'Sair Do MultiConnection' 2>&1            \
     ) 
-   _SelectedAction $selectedoption
+    _SelectedAction $selectedoption
 }
 
 _start(){
-  _InitScren
-  _installDeps
-  if [ ! -d $HOME"/.local/share/MultiSSHConnect" ]; then
-    _installMssh
-  fi
-  _initMultiSSHConnect
+    _InitScren
+    _installDeps
+    if [ ! -d $HOME"/.local/share/MultiSSHConnect" ]; then
+        _installMssh
+    fi
+    _initMultiSSHConnect
 }
 
 _start
