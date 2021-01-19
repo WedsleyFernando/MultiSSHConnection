@@ -103,7 +103,7 @@ _addConnection(){
 _SelectedAction(){
     case $1 in
         H-Quit) dialog --infobox 'Bay Bay !' 4 0;;
-        J-ListConection) _listConnection ;;
+        J-ListConnection) _listConnection ;;
         K-DirectConnection) _directConnection;;
         L-AddConection) _userAddConnection ;;
         *)      dialog --infobox 'Opção Invalida !' 4 0 && _initMultiSSHConnect;;
@@ -114,7 +114,7 @@ _initMultiSSHConnect(){
     selectedoption=$( dialog                           \
         --stdout --title 'MULTI SSH CONNECT'             \
         --menu 'Opções:' 0 0 0                           \
-        J-ListConection     'Lista Todas Conexões'       \
+        J-ListConnection     'Lista Todas Conexões'       \
         K-DirectConnection  'Conecta Diretamente Via Ip' \
         L-AddConection      'Adiciona Novas Conexões'    \
         H-Quit 'Sair Do MultiConnection' 2>&1            \
